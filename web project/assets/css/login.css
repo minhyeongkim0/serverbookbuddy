@@ -1,0 +1,163 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #000000;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+nav a {
+  color: #fff;
+  margin: 0 15px;
+  text-decoration: none;
+  font-weight: bold;
+}
+  nav a:hover {
+    color: #ff9800;
+  }
+
+/* 로그인/회원가입 박스 */
+.login-container {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 40px;
+  border-radius: 15px;
+  width: 350px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+    .login-container h1 {
+    margin-bottom: 30px;
+    font-size: 28px;
+    }
+
+/* 돌아가기 버튼 */
+.back-button {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: transparent;
+  color: #ccc;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.back-button:hover {
+  background: #333;
+  color: #fff;
+  border-color: #888;
+}
+/* 종료 버튼*/
+.exit-button {
+  position: absolute;
+  top: 15px;
+  right: 10px;
+  background: transparent;
+  color: #fff;
+  border: 1px solid #55555500;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+    .exit-button:hover {
+    background: #333;
+    color: #ff9800;
+    }
+
+/* 입력 필드 */
+.input-group {
+  margin-bottom: 20px;
+}
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font-size: 16px;
+}
+.input-group input::placeholder {
+  color: #aaa;
+}
+.input-group input:focus {
+  border-color: #ff9800;
+  outline: none;
+}
+
+/* 로그인 버튼 */
+.login-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #ccc;
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+    .login-button:hover {
+    background: #ff9800;
+    }
+/* 가입 버튼 */
+.sign-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #ccc;
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+    .sign-button:hover {
+    background: #ff9800;
+    }
+/* 비밀번호 찾기 버튼 */
+.findpw-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #ccc;
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+    .findpw-button:hover {
+    background: #ff9800;
+    }
+/* 하단 링크 */
+.links {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+.links a {
+  color: #ff9800;
+  text-decoration: none;
+  font-size: 14px;
+}
+.links a:hover {
+  text-decoration: underline;
+}
