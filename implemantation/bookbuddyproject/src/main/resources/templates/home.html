@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+    <title>BookBuddy</title>
+</head>
+<body>
+<div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+<div class="container">
+    <!-- 히어로 섹션 -->
+    <div class="p-5 mb-4 bg-light rounded-3 text-center">
+        <h1 class="display-5 fw-bold">📚 BookBuddy</h1>
+        <p class="lead">영남대학교 전공책 중고거래 플랫폼</p>
+        <p class="text-muted">선배의 책을 후배에게, 합리적인 가격으로!</p>
+        <div class="mt-4">
+            <a th:href="@{/books}" class="btn btn-primary btn-lg me-2">도서 검색</a>
+            <a th:if="${session.loginMember != null}" th:href="@{/books/new}" class="btn btn-outline-primary btn-lg">도서 등록</a>
+            <a th:if="${session.loginMember == null}" th:href="@{/members/new}" class="btn btn-outline-primary btn-lg">회원가입</a>
+        </div>
+    </div>
+
+    <!-- 최근 등록 도서 -->
+    <h4 class="mb-3">📖 최근 등록된 도서</h4>
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        <div class="col" th:each="book : ${books}" th:if="${#lists.size(books) > 0}">
+            <div class="card book-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${book.title}">도서명</h5>
+                    <p class="card-text text-muted" th:text="${book.author}">저자</p>
+                    <p class="card-text">
+                        <strong class="text-primary" th:text="${#numbers.formatInteger(book.price, 0, 'COMMA')} + '원'">가격</strong>
+                    </p>
+                    <span class="badge bg-secondary" th:text="${book.bookCondition.name()}">상태</span>
+                </div>
+                <div class="card-footer">
+                    <a th:href="@{/books/{id}(id=${book.id})}" class="btn btn-sm btn-outline-primary w-100">상세보기</a>
+                </div>
+            </div>
+        </div>
+        <div th:if="${#lists.isEmpty(books)}" class="col-12">
+            <div class="alert alert-info">등록된 도서가 없습니다.</div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

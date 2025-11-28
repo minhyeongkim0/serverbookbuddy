@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+    <title>찜 목록 - BookBuddy</title>
+</head>
+<body>
+<div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+<div class="container">
+    <h3 class="mb-4">❤️ 찜 목록</h3>
+
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        <div class="col" th:each="wishlist : ${wishlists}">
+            <div class="card book-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${wishlist.book.title}">도서명</h5>
+                    <p class="card-text text-muted mb-1" th:text="${wishlist.book.author}">저자</p>
+                    <p class="card-text">
+                        <strong class="text-primary" th:text="${#numbers.formatInteger(wishlist.book.price, 0, 'COMMA')} + '원'">가격</strong>
+                    </p>
+                    <span class="badge bg-info" th:text="${wishlist.book.bookCondition.name()}">상태</span>
+                    <span class="badge bg-success" th:if="${wishlist.book.status.name() == 'ON_SALE'}">판매중</span>
+                    <span class="badge bg-warning" th:if="${wishlist.book.status.name() == 'RESERVED'}">예약중</span>
+                    <span class="badge bg-secondary" th:if="${wishlist.book.status.name() == 'SOLD_OUT'}">판매완료</span>
+                </div>
+                <div class="card-footer d-flex justify-content-between">
+                    <a th:href="@{/books/{id}(id=${wishlist.book.id})}" class="btn btn-sm btn-outline-primary">상세보기</a>
+                    <form th:action="@{/wishlist/toggle}" method="post">
+                        <input type="hidden" name="bookId" th:value="${wishlist.book.id}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">찜 취소</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(wishlists)}" class="alert alert-info">
+        찜한 도서가 없습니다. <a th:href="@{/books}">도서를 검색</a>하고 마음에 드는 책을 찜해보세요!
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

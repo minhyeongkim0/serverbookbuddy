@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+    <title>로그인 - BookBuddy</title>
+</head>
+<body>
+<div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">🔐 로그인</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/login}" th:object="${loginForm}" method="post">
+                        
+                        <!-- 글로벌 에러 -->
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                            <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">아이디</label>
+                            <input type="text" th:field="*{loginId}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('loginId')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('loginId')}" th:errors="*{loginId}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">비밀번호</label>
+                            <input type="password" th:field="*{password}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">로그인</button>
+                            <a th:href="@{/members/new}" class="btn btn-outline-secondary">회원가입</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
