@@ -94,8 +94,8 @@ public class MemberService {
     }
 
     private void validateEmailDomain(String email) {
-        if (!email.endsWith("@ynu.ac.kr")) {
-            throw new IllegalStateException("학교 이메일을 입력해주세요 (@ynu.ac.kr)");
+        if (!email.endsWith("@yu.ac.kr") && !email.endsWith("@ynu.ac.kr")) {
+            throw new IllegalStateException("영남대학교 메일로만 가입 가능합니다. (@yu.ac.kr 또는 @ynu.ac.kr)");
         }
     }
 }

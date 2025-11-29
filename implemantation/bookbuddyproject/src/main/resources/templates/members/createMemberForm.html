@@ -11,15 +11,47 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="mb-0">📝 회원가입</h4>
+                    <h4 class="mb-0">회원가입</h4>
                 </div>
                 <div class="card-body">
-                    <form th:action="@{/members/new}" th:object="${memberForm}" method="post">
+                    <form th:action="@{/members/new}" th:object="${memberForm}" method="post" id="joinForm" autocomplete="off">
                         
                         <!-- 글로벌 에러 -->
                         <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
                             <p th:each="err : ${#fields.globalErrors()}" th:text="${err}"></p>
                         </div>
+
+                        <!-- 이메일 + 인증 -->
+                        <div class="mb-3">
+                            <label class="form-label">학교 이메일</label>
+                            <div class="input-group">
+                                <input type="email" th:field="*{email}" class="form-control" id="email"
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                       th:readonly="${verifiedEmail != null}"
+                                       placeholder="example@yu.ac.kr 또는 @ynu.ac.kr">
+                                <button type="button" class="btn btn-outline-primary" id="sendCodeBtn" 
+                                        th:disabled="${verifiedEmail != null}"
+                                        onclick="sendEmailCode()"
+                                        th:text="${verifiedEmail != null} ? '인증완료' : '인증코드 발송'">인증코드 발송</button>
+                            </div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                            <div id="emailMessage" class="form-text">
+                                <span th:if="${verifiedEmail != null}" class="text-success">인증되었습니다.</span>
+                            </div>
+                        </div>
+
+                        <!-- 인증코드 입력 (이미 인증된 경우 숨김) -->
+                        <div class="mb-3" id="codeSection" th:style="${verifiedEmail != null} ? 'display: none;' : 'display: none;'">
+                            <label class="form-label">인증코드</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="inputCode" placeholder="6자리 인증코드">
+                                <button type="button" class="btn btn-outline-success" id="verifyBtn" onclick="checkEmailCode()">확인</button>
+                            </div>
+                            <div id="codeMessage" class="form-text"></div>
+                        </div>
+
+                        <!-- 인증 완료 표시 (히든) -->
+                        <input type="hidden" id="emailVerified" name="emailVerified" th:value="${verifiedEmail != null} ? 'true' : 'false'">
 
                         <div class="mb-3">
                             <label class="form-label">아이디</label>
@@ -35,14 +67,6 @@
                                    th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
                                    placeholder="8-20자 영문, 숫자, 특수문자 조합">
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">학교 이메일</label>
-                            <input type="email" th:field="*{email}" class="form-control"
-                                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
-                                   placeholder="example@ynu.ac.kr">
-                            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
                         </div>
 
                         <div class="mb-3">
@@ -62,7 +86,7 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">회원가입</button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">회원가입</button>
                             <a th:href="@{/login}" class="btn btn-outline-secondary">이미 계정이 있으신가요?</a>
                         </div>
                     </form>
@@ -73,5 +97,101 @@
 </div>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:inline="javascript">
+    var isEmailVerified = [[${verifiedEmail != null}]];
+
+    function sendEmailCode() {
+        var email = document.getElementById('email').value;
+        var messageDiv = document.getElementById('emailMessage');
+
+        if (!email) {
+            messageDiv.innerHTML = '<span class="text-danger">이메일을 입력해주세요.</span>';
+            return;
+        }
+
+        document.getElementById('sendCodeBtn').disabled = true;
+        document.getElementById('sendCodeBtn').textContent = '발송중...';
+
+        fetch('/api/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            console.log('발송 응답:', data);
+            if (data.success) {
+                messageDiv.innerHTML = '<span class="text-success">인증코드가 발송되었습니다. (콘솔 확인)</span>';
+                document.getElementById('codeSection').style.display = 'block';
+                document.getElementById('sendCodeBtn').textContent = '재발송';
+                document.getElementById('sendCodeBtn').disabled = false;
+            } else {
+                messageDiv.innerHTML = '<span class="text-danger">' + data.message + '</span>';
+                document.getElementById('sendCodeBtn').textContent = '인증코드 발송';
+                document.getElementById('sendCodeBtn').disabled = false;
+            }
+        })
+        .catch(function(error) {
+            console.error('발송 에러:', error);
+            messageDiv.innerHTML = '<span class="text-danger">오류가 발생했습니다.</span>';
+            document.getElementById('sendCodeBtn').textContent = '인증코드 발송';
+            document.getElementById('sendCodeBtn').disabled = false;
+        });
+    }
+
+    function checkEmailCode() {
+        var email = document.getElementById('email').value;
+        var code = document.getElementById('inputCode').value;
+        var messageDiv = document.getElementById('codeMessage');
+
+        if (!code) {
+            messageDiv.innerHTML = '<span class="text-danger">인증코드를 입력해주세요.</span>';
+            return;
+        }
+
+        document.getElementById('verifyBtn').disabled = true;
+        document.getElementById('verifyBtn').textContent = '확인중...';
+
+        fetch('/api/email/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, code: code })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            console.log('인증 응답:', data);
+            if (data.success) {
+                messageDiv.innerHTML = '<span class="text-success">인증되었습니다.</span>';
+                isEmailVerified = true;
+                document.getElementById('emailVerified').value = 'true';
+                document.getElementById('email').readOnly = true;
+                document.getElementById('sendCodeBtn').disabled = true;
+                document.getElementById('sendCodeBtn').textContent = '인증완료';
+                document.getElementById('inputCode').readOnly = true;
+                document.getElementById('verifyBtn').disabled = true;
+                document.getElementById('verifyBtn').textContent = '인증완료';
+                document.getElementById('verifyBtn').className = 'btn btn-success';
+            } else {
+                messageDiv.innerHTML = '<span class="text-danger">' + data.message + '</span>';
+                document.getElementById('verifyBtn').textContent = '확인';
+                document.getElementById('verifyBtn').disabled = false;
+            }
+        })
+        .catch(function(error) {
+            console.error('인증 에러:', error);
+            messageDiv.innerHTML = '<span class="text-danger">오류가 발생했습니다.</span>';
+            document.getElementById('verifyBtn').textContent = '확인';
+            document.getElementById('verifyBtn').disabled = false;
+        });
+    }
+
+    document.getElementById('joinForm').addEventListener('submit', function(e) {
+        if (!isEmailVerified) {
+            e.preventDefault();
+            alert('이메일 인증을 완료해주세요.');
+        }
+    });
+</script>
 </body>
 </html>

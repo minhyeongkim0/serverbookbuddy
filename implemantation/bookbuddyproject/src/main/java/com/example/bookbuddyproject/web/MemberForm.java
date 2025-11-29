@@ -19,7 +19,7 @@ public class MemberForm {
     private String password;
 
     @NotEmpty(message = "이메일은 필수입니다")
-    @Pattern(regexp = "^[a-zA-Z0-9]+@ynu\\.ac\\.kr$", message = "학교 이메일을 입력해주세요 (@ynu.ac.kr)")
+    @Pattern(regexp = "^[a-zA-Z0-9]+@(yu\\.ac\\.kr|ynu\\.ac\\.kr)$", message = "영남대학교 메일로만 인증 가능합니다. (@yu.ac.kr 또는 @ynu.ac.kr)")
     private String email;
 
     @NotEmpty(message = "학과는 필수입니다")
@@ -27,4 +27,6 @@ public class MemberForm {
 
     @NotEmpty(message = "학번은 필수입니다")
     private String studentId;
+
+    private String emailVerified;  // 이메일 인증 여부
 }
