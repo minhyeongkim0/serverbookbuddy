@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+    <title>도서 수정 - BookBuddy</title>
+</head>
+<body>
+<div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">✏️ 도서 수정</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/books/{id}/edit(id=${bookForm.id})}" th:object="${bookForm}" method="post">
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">도서명 *</label>
+                                <input type="text" th:field="*{title}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">도서 상태 *</label>
+                                <select th:field="*{bookCondition}" class="form-select">
+                                    <option th:each="condition : ${bookConditions}" th:value="${condition}" th:text="${condition.name()}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">저자 *</label>
+                                <input type="text" th:field="*{author}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('author')} ? 'is-invalid'">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('author')}" th:errors="*{author}"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">출판사</label>
+                                <input type="text" th:field="*{publisher}" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">판매 가격 *</label>
+                                <div class="input-group">
+                                    <input type="number" th:field="*{price}" class="form-control"
+                                           th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'">
+                                    <span class="input-group-text">원</span>
+                                </div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">카테고리 (학과)</label>
+                                <input type="text" th:field="*{category}" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">도서 설명</label>
+                            <textarea th:field="*{description}" class="form-control" rows="4"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">이미지 URL</label>
+                            <input type="text" th:field="*{imageUrl}" class="form-control">
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">수정하기</button>
+                            <a th:href="@{/books/{id}(id=${bookForm.id})}" class="btn btn-outline-secondary">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="bodyHeader" class="mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">📚 BookBuddy</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/books}">도서 검색</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/books/new}">도서 등록</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/books/my}">내 판매</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/transactions}">거래 현황</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/wishlist}">찜 목록</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item" th:if="${session.loginMember == null}">
+                        <a class="nav-link" th:href="@{/login}">로그인</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember == null}">
+                        <a class="nav-link" th:href="@{/members/new}">회원가입</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <span class="nav-link text-light" th:text="${session.loginMember.loginId} + '님'"></span>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/logout}">로그아웃</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>
+</html>
