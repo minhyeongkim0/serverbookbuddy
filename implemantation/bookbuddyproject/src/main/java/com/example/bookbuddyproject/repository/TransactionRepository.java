@@ -20,7 +20,18 @@ public class TransactionRepository {
     }
 
     public Transaction findOne(Long id) {
-        return em.find(Transaction.class, id);
+        try {
+            return em.createQuery(
+                    "select t from Transaction t " +
+                    "join fetch t.book b " +
+                    "join fetch t.seller s " +
+                    "join fetch t.buyer bu " +
+                    "where t.id = :id", Transaction.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public List<Transaction> findAll() {
@@ -28,29 +39,26 @@ public class TransactionRepository {
                 .getResultList();
     }
 
-    /**
-     * 구매자의 거래 목록 조회
-     */
     public List<Transaction> findByBuyer(Long buyerId) {
         return em.createQuery(
-                "select t from Transaction t where t.buyer.id = :buyerId order by t.requestedAt desc", Transaction.class)
+                "select t from Transaction t " +
+                "join fetch t.book " +
+                "join fetch t.seller " +
+                "where t.buyer.id = :buyerId order by t.requestedAt desc", Transaction.class)
                 .setParameter("buyerId", buyerId)
                 .getResultList();
     }
 
-    /**
-     * 판매자의 거래 목록 조회
-     */
     public List<Transaction> findBySeller(Long sellerId) {
         return em.createQuery(
-                "select t from Transaction t where t.seller.id = :sellerId order by t.requestedAt desc", Transaction.class)
+                "select t from Transaction t " +
+                "join fetch t.book " +
+                "join fetch t.buyer " +
+                "where t.seller.id = :sellerId order by t.requestedAt desc", Transaction.class)
                 .setParameter("sellerId", sellerId)
                 .getResultList();
     }
 
-    /**
-     * 특정 도서의 거래 목록 조회
-     */
     public List<Transaction> findByBook(Long bookId) {
         return em.createQuery(
                 "select t from Transaction t where t.book.id = :bookId order by t.requestedAt desc", Transaction.class)
@@ -58,20 +66,18 @@ public class TransactionRepository {
                 .getResultList();
     }
 
-    /**
-     * 특정 회원의 모든 거래 조회 (구매자 또는 판매자)
-     */
     public List<Transaction> findByMember(Long memberId) {
         return em.createQuery(
-                "select t from Transaction t where t.buyer.id = :memberId or t.seller.id = :memberId " +
+                "select t from Transaction t " +
+                "join fetch t.book " +
+                "join fetch t.seller " +
+                "join fetch t.buyer " +
+                "where t.buyer.id = :memberId or t.seller.id = :memberId " +
                 "order by t.requestedAt desc", Transaction.class)
                 .setParameter("memberId", memberId)
                 .getResultList();
     }
 
-    /**
-     * 특정 상태의 거래 조회
-     */
     public List<Transaction> findByStatus(TransactionStatus status) {
         return em.createQuery(
                 "select t from Transaction t where t.status = :status order by t.requestedAt desc", Transaction.class)
@@ -79,9 +85,6 @@ public class TransactionRepository {
                 .getResultList();
     }
 
-    /**
-     * 구매자가 특정 도서에 이미 거래 신청했는지 확인
-     */
     public Optional<Transaction> findByBuyerAndBook(Long buyerId, Long bookId) {
         List<Transaction> result = em.createQuery(
                 "select t from Transaction t where t.buyer.id = :buyerId and t.book.id = :bookId " +
@@ -94,9 +97,6 @@ public class TransactionRepository {
         return result.stream().findFirst();
     }
 
-    /**
-     * 거래 삭제
-     */
     public void delete(Transaction transaction) {
         em.remove(transaction);
     }

@@ -21,30 +21,31 @@ public class BookRepository {
     }
 
     public Book findOne(Long id) {
-        return em.find(Book.class, id);
+        try {
+            return em.createQuery(
+                    "select b from Book b join fetch b.seller where b.id = :id", Book.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public List<Book> findAll() {
-        return em.createQuery("select b from Book b order by b.createdAt desc", Book.class)
+        return em.createQuery("select b from Book b join fetch b.seller order by b.createdAt desc", Book.class)
                 .getResultList();
     }
 
-    /**
-     * 판매중인 도서만 조회
-     */
     public List<Book> findAllOnSale() {
         return em.createQuery(
-                "select b from Book b where b.status = :status order by b.createdAt desc", Book.class)
+                "select b from Book b join fetch b.seller where b.status = :status order by b.createdAt desc", Book.class)
                 .setParameter("status", BookStatus.ON_SALE)
                 .getResultList();
     }
 
-    /**
-     * 키워드 검색 (도서명, 저자, 출판사)
-     */
     public List<Book> searchByKeyword(String keyword) {
         return em.createQuery(
-                "select b from Book b where b.status = :status " +
+                "select b from Book b join fetch b.seller where b.status = :status " +
                 "and (b.title like :keyword or b.author like :keyword or b.publisher like :keyword) " +
                 "order by b.createdAt desc", Book.class)
                 .setParameter("status", BookStatus.ON_SALE)
@@ -52,14 +53,11 @@ public class BookRepository {
                 .getResultList();
     }
 
-    /**
-     * 복합 검색 (키워드 + 카테고리 + 가격범위 + 상태등급)
-     */
     public List<Book> search(String keyword, String category, 
                              Integer minPrice, Integer maxPrice, 
                              BookCondition bookCondition) {
         StringBuilder jpql = new StringBuilder(
-                "select b from Book b where b.status = :status");
+                "select b from Book b join fetch b.seller where b.status = :status");
         
         if (keyword != null && !keyword.isEmpty()) {
             jpql.append(" and (b.title like :keyword or b.author like :keyword or b.publisher like :keyword)");
@@ -100,9 +98,6 @@ public class BookRepository {
         return query.getResultList();
     }
 
-    /**
-     * 판매자의 도서 목록 조회
-     */
     public List<Book> findBySeller(Long sellerId) {
         return em.createQuery(
                 "select b from Book b where b.seller.id = :sellerId order by b.createdAt desc", Book.class)
@@ -110,21 +105,15 @@ public class BookRepository {
                 .getResultList();
     }
 
-    /**
-     * 카테고리별 도서 조회
-     */
     public List<Book> findByCategory(String category) {
         return em.createQuery(
-                "select b from Book b where b.status = :status and b.category = :category " +
+                "select b from Book b join fetch b.seller where b.status = :status and b.category = :category " +
                 "order by b.createdAt desc", Book.class)
                 .setParameter("status", BookStatus.ON_SALE)
                 .setParameter("category", category)
                 .getResultList();
     }
 
-    /**
-     * 도서 삭제
-     */
     public void delete(Book book) {
         em.remove(book);
     }
