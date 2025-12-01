@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+<div th:replace="fragments/bodyHeader :: bodyHeader"></div>
+
+<div class="container mt-4">
+    <h3>포인트 충전 신청</h3>
+    <p class="mt-2">
+        관리자 입금 계좌: <strong>123456789</strong>
+        <br>
+        위 계좌로 입금한 후 아래에 충전할 포인트를 입력하고 신청해주세요.
+    </p>
+
+    <form th:action="@{/points/charge}" th:object="${chargeForm}" method="post" class="mt-3">
+        <div class="mb-3">
+            <label class="form-label">충전 포인트</label>
+            <input type="number" th:field="*{amount}" class="form-control" min="1">
+            <div class="text-danger" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+        </div>
+
+        <div class="text-danger" th:if="${#fields.hasGlobalErrors()}"
+             th:each="err : ${#fields.globalErrors()}"
+             th:text="${err}"></div>
+
+        <button type="submit" class="btn btn-primary">충전 신청</button>
+        <a th:href="@{/points}" class="btn btn-secondary ms-2">취소</a>
+    </form>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

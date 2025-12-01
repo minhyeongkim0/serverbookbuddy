@@ -94,6 +94,7 @@ public class TransactionService {
     /**
      * 결제하기 (구매자)
      * Use Case #3.4
+     *  -> 포인트로 결제: 구매자 포인트 차감
      */
     @Transactional
     public void payTransaction(Long transactionId, Long buyerId, String depositorName) {
@@ -104,12 +105,20 @@ public class TransactionService {
             throw new IllegalStateException("구매자만 결제할 수 있습니다.");
         }
 
+        // ⭐ 포인트 차감 로직
+        Member buyer = transaction.getBuyer();
+        int price = transaction.getPrice();   // 거래 금액 = 책 가격(포인트)
+
+        buyer.usePoints(price);              // Member 엔티티에 만든 메서드 (포인트 부족 시 예외)
+
+        // 결제 상태 변경 + 입금자명 저장
         transaction.pay(depositorName);
     }
 
     /**
      * 거래 완료 (판매자)
      * Use Case #3.5
+     *  -> 포인트로 정산: 판매자 포인트 지급
      */
     @Transactional
     public void completeTransaction(Long transactionId, Long sellerId) {
@@ -120,6 +129,13 @@ public class TransactionService {
             throw new IllegalStateException("판매자만 거래를 완료할 수 있습니다.");
         }
 
+        // ⭐ 판매자 포인트 지급
+        Member seller = transaction.getSeller();
+        int price = transaction.getPrice();   // 거래 금액(포인트)
+
+        seller.addPoints(price);             // Member 엔티티에 만든 메서드
+
+        // 거래 상태 완료 처리 (도서 soldOut 포함)
         transaction.complete();
     }
 
