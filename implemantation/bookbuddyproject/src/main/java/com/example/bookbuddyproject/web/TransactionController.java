@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.web.servlet.mvc.support.RedirectAttributes; // ⭐ 추가
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/transactions")
@@ -32,6 +34,7 @@ public class TransactionController {
         try {
             transactionService.requestTransaction(loginMember.getId(), bookId);
         } catch (IllegalStateException e) {
+            // 여기는 책 상세 화면에서 에러를 보여주려면 flash attribute로 바꿔도 됨
             model.addAttribute("error", e.getMessage());
             return "redirect:/books/" + bookId;
         }
@@ -44,7 +47,7 @@ public class TransactionController {
      * Use Case #3.3
      */
     @GetMapping
-    public String list(@RequestParam(defaultValue = "buy") String tab, 
+    public String list(@RequestParam(defaultValue = "buy") String tab,
                        HttpSession session, Model model) {
         Member loginMember = (Member) session.getAttribute("loginMember");
         if (loginMember == null) {
@@ -104,7 +107,7 @@ public class TransactionController {
         try {
             transactionService.acceptTransaction(transactionId, loginMember.getId());
         } catch (IllegalStateException e) {
-            // 에러 처리
+            // 에러 처리 필요하면 flash attribute 사용 가능
         }
 
         return "redirect:/transactions/" + transactionId;
@@ -136,7 +139,8 @@ public class TransactionController {
     @PostMapping("/{transactionId}/pay")
     public String pay(@PathVariable Long transactionId,
                       @RequestParam String depositorName,
-                      HttpSession session) {
+                      HttpSession session,
+                      RedirectAttributes redirectAttributes) { // ⭐ 변경: RedirectAttributes 추가
         Member loginMember = (Member) session.getAttribute("loginMember");
         if (loginMember == null) {
             return "redirect:/login";
@@ -145,7 +149,9 @@ public class TransactionController {
         try {
             transactionService.payTransaction(transactionId, loginMember.getId(), depositorName);
         } catch (IllegalStateException e) {
-            // 에러 처리
+            // ⭐ 포인트 부족 등 예외 메시지를 flash attribute로 담음
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/transactions/" + transactionId;
         }
 
         return "redirect:/transactions/" + transactionId;

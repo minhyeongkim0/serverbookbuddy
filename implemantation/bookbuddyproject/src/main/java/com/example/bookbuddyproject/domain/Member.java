@@ -44,10 +44,15 @@ public class Member {
 
     private LocalDateTime lockTime;  // 계정 잠금 해제 시간
 
+    @Column(name = "point_balance") // 보유 포인트 (기본 0P)
+    private int pointBalance = 0;
+
+
     @Enumerated(EnumType.STRING)
     private MemberStatus status;  // 계정 상태 (ACTIVE, LOCKED)
 
     private LocalDateTime createdAt;  // 가입일
+
 
     // === 생성 메서드 === //
     public static Member createMember(String loginId, String password, String email,
@@ -65,6 +70,29 @@ public class Member {
     }
 
     // === 비즈니스 로직 === //
+
+    /**
+     * 포인트 충전/적립
+     */
+    public void addPoints(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("포인트 충전 금액은 0보다 커야 합니다.");
+        }
+        this.pointBalance += amount;
+    }
+
+    /**
+     * 포인트 사용/차감
+     */
+    public void usePoints(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("포인트 사용 금액은 0보다 커야 합니다.");
+        }
+        if (this.pointBalance < amount) {
+            throw new IllegalStateException("포인트가 부족합니다.");
+        }
+        this.pointBalance -= amount;
+    }
 
     /**
      * 로그인 실패 시 실패 횟수 증가
