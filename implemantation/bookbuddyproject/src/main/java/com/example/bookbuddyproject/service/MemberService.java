@@ -18,7 +18,6 @@ public class MemberService {
 
     /**
      * 회원가입
-     * Use Case #1.1
      */
     @Transactional
     public Long join(String loginId, String password, String email,
@@ -37,7 +36,6 @@ public class MemberService {
 
     /**
      * 로그인
-     * Use Case #1.2
      */
     @Transactional
     public Member login(String loginId, String password) {
@@ -78,7 +76,30 @@ public class MemberService {
     public List<Member> findMembers() {
         return memberRepository.findAll();
     }
+    
+    /**
+     * 회원 관리용 목록 조회 (검색 기능 포함)
+     */
+    public List<Member> findMembers(String keyword) {
+        // 검색어가 있으면 아이디 검색, 없으면 전체 최신순 조회
+        if (keyword != null && !keyword.isBlank()) {
+            return memberRepository.findByLoginIdLike(keyword);
+        }
+        return memberRepository.findAllDesc();
+    }
 
+    /**
+     * 회원 강제 탈퇴 (Ban)
+     */
+    @Transactional
+    public void banMember(Long memberId) {
+        Member member = memberRepository.findOne(memberId);
+        if (member == null) {
+            throw new IllegalStateException("존재하지 않는 회원입니다.");
+        }
+        // Member 엔티티의 ban() 메서드 호출 (상태를 BANNED로 변경)
+        member.ban();
+    }
     // === 검증 메서드 === //
 
     private void validateDuplicateLoginId(String loginId) {

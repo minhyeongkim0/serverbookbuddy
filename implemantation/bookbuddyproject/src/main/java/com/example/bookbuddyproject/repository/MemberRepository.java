@@ -56,4 +56,23 @@ public class MemberRepository {
     public boolean existsByEmail(String email) {
         return findByEmail(email).isPresent();
     }
+    /**
+     * 전체 회원 목록 조회 (가입일 최신순 정렬)
+     * 사용처: 관리자 페이지 회원 목록 초기 진입 시
+     */
+    public List<Member> findAllDesc() {
+        return em.createQuery("select m from Member m order by m.createdAt desc", Member.class)
+                .getResultList();
+    }
+
+    /**
+     * 회원 검색 (아이디 포함 검색, 가입일 최신순 정렬)
+     * 사용처: 관리자 페이지에서 아이디로 검색 시
+     */
+    public List<Member> findByLoginIdLike(String keyword) {
+        return em.createQuery(
+                "select m from Member m where m.loginId like :keyword order by m.createdAt desc", Member.class)
+                .setParameter("keyword", "%" + keyword + "%")
+                .getResultList();
+    }
 }

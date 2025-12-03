@@ -72,6 +72,12 @@ public class Member {
     // === 비즈니스 로직 === //
 
     /**
+     * 관리자에 의한 강제 탈퇴 처리
+     */
+    public void ban() {
+        this.status = MemberStatus.BANNED;
+    }
+    /**
      * 포인트 충전/적립
      */
     public void addPoints(int amount) {
@@ -129,6 +135,9 @@ public class Member {
      * 계정 잠금 여부 확인
      */
     public boolean isLocked() {
+        // 강퇴된 회원은 영구 잠금
+        if (this.status == MemberStatus.BANNED) return true;
+
         if (this.status != MemberStatus.LOCKED) return false;
         if (isLockTimeExpired()) {
             this.status = MemberStatus.ACTIVE;
