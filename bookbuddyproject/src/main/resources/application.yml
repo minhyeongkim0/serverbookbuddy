@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: bookbuddyproject
+
+  # H2 Database
+  datasource:
+    url: jdbc:h2:mem:bookbuddy
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # H2 Console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+    open-in-view: true
+
+  # Thymeleaf
+  thymeleaf:
+    cache: false
+
+  # 파일 업로드 크기 제한
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+  # Gmail SMTP 설정
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Logging
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+
+# 파일 업로드 설정
+file:
+  upload-dir: ./uploads/images

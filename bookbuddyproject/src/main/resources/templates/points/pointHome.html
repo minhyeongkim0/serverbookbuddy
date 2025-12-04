@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+<div th:replace="fragments/bodyHeader :: bodyHeader"></div>
+
+<div class="container mt-4">
+    <h3>포인트 관리</h3>
+    <p class="mt-2">
+        현재 보유 포인트:
+        <strong th:text="${member.pointBalance} + ' P'">0 P</strong>
+    </p>
+
+    <div class="mt-4">
+        <a class="btn btn-success me-2" th:href="@{/points/charge}">포인트 충전</a>
+        <a class="btn btn-outline-warning" th:href="@{/points/refund}">포인트 환급</a>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

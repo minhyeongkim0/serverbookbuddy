@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신고 처리 - BookBuddy Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a2e;
+            min-height: 100vh;
+            color: #fff;
+        }
+        .navbar {
+            background-color: #16213e !important;
+        }
+        .sidebar {
+            background-color: #16213e;
+            min-height: calc(100vh - 56px);
+            padding-top: 20px;
+        }
+        .sidebar .nav-link {
+            color: #adb5bd;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 5px 10px;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #0f3460;
+            color: #fff;
+        }
+        .sidebar .nav-link.active {
+            background-color: #e94560;
+            color: #fff;
+        }
+        .content-area {
+            padding: 30px;
+        }
+        .table {
+            color: #fff;
+        }
+        .table thead th {
+            border-color: #0f3460;
+        }
+        .table tbody td {
+            border-color: #0f3460;
+        }
+    </style>
+</head>
+<body>
+<!-- 네비게이션 -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" th:href="@{/admin}">BookBuddy Admin</a>
+        <div class="navbar-nav ms-auto">
+            <span class="nav-link text-light">master님</span>
+            <a class="nav-link" th:href="@{/admin/logout}">로그아웃</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- 사이드바 -->
+        <div class="col-md-2 sidebar">
+            <nav class="nav flex-column">
+                <a class="nav-link" th:href="@{/admin/point-refund}">포인트 환급</a>
+                <a class="nav-link" th:href="@{/admin/point-charge}">포인트 충전 관리</a>
+                <a class="nav-link" th:href="@{/admin/members}">회원목록 조회</a>
+                <a class="nav-link active" th:href="@{/admin/reports}">신고 처리</a>
+                <a class="nav-link" th:href="@{/admin/admins}">관리자 추가</a>
+            </nav>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="col-md-10 content-area">
+            <h4 class="mb-4">신고 처리</h4>
+
+            <!-- 메시지 -->
+            <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <p class="text-muted mb-4">신고 3회 이상 누적된 회원 목록입니다.</p>
+
+            <div th:if="${#lists.isEmpty(members)}" class="alert alert-info">
+                신고 3회 이상인 회원이 없습니다.
+            </div>
+
+            <table th:if="${!#lists.isEmpty(members)}" class="table">
+                <thead>
+                    <tr>
+                        <th>아이디</th>
+                        <th>이메일</th>
+                        <th>학과</th>
+                        <th>신고 횟수</th>
+                        <th>처리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="member : ${members}">
+                        <td th:text="${member.loginId}"></td>
+                        <td th:text="${member.email}"></td>
+                        <td th:text="${member.department}"></td>
+                        <td><span class="badge bg-danger" th:text="${member.reportCount} + '회'"></span></td>
+                        <td>
+                            <form th:action="@{/admin/reports/{id}/ban(id=${member.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('정말 강퇴하시겠습니까? 해당 이메일로 재가입이 불가능합니다.')">강퇴</button>
+                            </form>
+                            <form th:action="@{/admin/reports/{id}/clear(id=${member.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-secondary btn-sm"
+                                        onclick="return confirm('문제없음 처리하시겠습니까? 신고 횟수가 초기화됩니다.')">문제없음</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

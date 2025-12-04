@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <div th:fragment="chatPopup">
+    <div
+      id="chat-config"
+      th:if="${session.loginMember != null}"
+      th:data-user-id="${session.loginMember.id}"
+      th:data-user-name="${session.loginMember.loginId}"
+      style="display: none"
+    ></div>
+
+    <!-- CSS -->
+    <style>
+      #chat-window {
+        position: fixed;
+        bottom: 100px;
+        right: 24px;
+        width: 380px;
+        height: 600px;
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e5e7eb;
+        z-index: 10000; /* 최상위 */
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
+        font-family: sans-serif;
+      }
+      .chat-hidden {
+        opacity: 0;
+        transform: scale(0.95);
+        pointer-events: none;
+        visibility: hidden;
+      }
+      .chat-visible {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+        visibility: visible;
+      }
+
+      /* 유틸리티 */
+      .d-none {
+        display: none !important;
+      }
+      .d-flex {
+        display: flex !important;
+      }
+
+      /* FAB 버튼 */
+      #chat-fab {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 60px;
+        height: 60px;
+        background-color: #4f46e5;
+        color: white;
+        border-radius: 50%;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        z-index: 10000; /* 최상위 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+      }
+      #chat-fab:hover {
+        transform: scale(1.1);
+      }
+      #chat-fab i {
+        font-size: 24px;
+      }
+
+      /* 헤더, 바디, 메시지 스타일 (이전과 동일) */
+      .chat-header {
+        background-color: #4f46e5;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .chat-header button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+      .chat-body {
+        flex: 1;
+        background-color: #f3f4f6;
+        position: relative;
+        overflow: hidden;
+      }
+      .scroll-area {
+        height: 100%;
+        overflow-y: auto;
+        padding: 15px;
+      }
+
+      .room-item {
+        display: flex;
+        align-items: center;
+        background: white;
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+      .room-item:hover {
+        background-color: #f9fafb;
+      }
+      .room-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #e0e7ff;
+        color: #4f46e5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+      }
+      .room-title {
+        font-weight: bold;
+        font-size: 0.95rem;
+      }
+      .room-last-msg {
+        font-size: 0.85rem;
+        color: #6b7280;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .msg-row {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+      }
+      .msg-row.me {
+        align-items: flex-end;
+      }
+      .msg-row.other {
+        align-items: flex-start;
+      }
+      .msg-bubble {
+        max-width: 80%;
+        padding: 10px 14px;
+        border-radius: 16px;
+        font-size: 0.95rem;
+        word-break: break-word;
+      }
+      .msg-row.me .msg-bubble {
+        background-color: #4f46e5;
+        color: white;
+        border-bottom-right-radius: 2px;
+      }
+      .msg-row.other .msg-bubble {
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        border-bottom-left-radius: 2px;
+      }
+      .msg-time {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        margin-top: 4px;
+      }
+
+      .input-area {
+        background: white;
+        padding: 12px;
+        border-top: 1px solid #e5e7eb;
+      }
+      .input-group {
+        display: flex;
+        align-items: center;
+        background-color: #f3f4f6;
+        border-radius: 24px;
+        padding: 5px 15px;
+        border: 1px solid #e5e7eb;
+      }
+      #chat-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        padding: 8px 0;
+        font-size: 0.95rem;
+        resize: none;
+        height: 24px;
+        line-height: 24px;
+      }
+      #send-btn {
+        border: none;
+        background: none;
+        color: #4f46e5;
+        cursor: pointer;
+        padding: 8px;
+        margin-left: 5px;
+      }
+    </style>
+
+    <button id="chat-fab" onclick="ChatManager.togglePopup()">
+      <i class="fas fa-comments"></i>
+    </button>
+
+    <div id="chat-window" class="chat-hidden">
+      <div class="chat-header">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <button id="btn-back" onclick="ChatManager.showList()" class="d-none">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <div>
+            <span id="header-title" style="font-weight: bold">채팅 목록</span>
+            <span
+              id="header-subtitle"
+              style="font-size: 0.8rem; opacity: 0.8"
+              class="d-none"
+              >실시간</span
+            >
+          </div>
+        </div>
+        <button onclick="ChatManager.togglePopup()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="chat-body">
+        <div id="view-list" class="scroll-area">
+          <div
+            id="loading-list"
+            class="text-center d-none"
+            style="padding-top: 50px; color: #9ca3af"
+          >
+            <i class="fas fa-spinner fa-spin fa-2x"></i><br />로딩중...
+          </div>
+          <div
+            id="empty-list-msg"
+            class="text-center d-none"
+            style="padding-top: 50px; color: #9ca3af"
+          >
+            <i class="far fa-comments fa-3x mb-2"></i>
+            <p>대화 내역이 없습니다.</p>
+          </div>
+          <div id="room-list-container"></div>
+        </div>
+
+        <div
+          id="view-room"
+          class="d-none"
+          style="height: 100%; flex-direction: column"
+        >
+          <div id="chat-messages" class="scroll-area" style="flex: 1"></div>
+          <div class="input-area">
+            <div class="input-group">
+              <textarea
+                id="chat-input"
+                rows="1"
+                placeholder="메시지 입력..."
+                oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"
+                onkeypress="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); ChatManager.sendMessage(); }"
+              ></textarea>
+              <button id="send-btn" onclick="ChatManager.sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 라이브러리 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="/js/chat.js"></script>
+  </div>
+</html>

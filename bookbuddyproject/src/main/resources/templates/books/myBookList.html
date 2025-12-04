@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+    <title>내 판매 목록 - BookBuddy</title>
+</head>
+<body>
+<div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>📦 내 판매 목록</h3>
+        <a th:href="@{/books/new}" class="btn btn-primary">+ 도서 등록</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 80px;">이미지</th>
+                    <th>도서명</th>
+                    <th>가격</th>
+                    <th>상태</th>
+                    <th>판매상태</th>
+                    <th>조회수</th>
+                    <th>등록일</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="book : ${books}">
+                    <td>
+                        <img th:if="${!book.images.isEmpty()}" 
+                             th:src="@{'/images/' + ${book.images[0].savedFilename}}" 
+                             style="width: 60px; height: 60px; object-fit: cover;" 
+                             class="rounded">
+                        <div th:if="${book.images.isEmpty()}" 
+                             class="bg-light rounded d-flex align-items-center justify-content-center" 
+                             style="width: 60px; height: 60px;">
+                            <small class="text-muted">없음</small>
+                        </div>
+                    </td>
+                    <td>
+                        <a th:href="@{/books/{id}(id=${book.id})}" th:text="${book.title}">도서명</a>
+                    </td>
+                    <td th:text="${#numbers.formatInteger(book.price, 0, 'COMMA')} + '원'">가격</td>
+                    <td><span class="badge bg-info" th:text="${book.bookCondition.displayName}">상태</span></td>
+                    <td><span class="badge bg-success" th:text="${book.status.displayName}">판매중</span></td>
+                    <td th:text="${book.viewCount}">0</td>
+                    <td th:text="${#temporals.format(book.createdAt, 'yyyy-MM-dd')}">등록일</td>
+                    <td>
+                        <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-sm btn-outline-primary">수정</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${#lists.isEmpty(books)}" class="alert alert-info">
+        등록한 도서가 없습니다. <a th:href="@{/books/new}">도서를 등록</a>해보세요!
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

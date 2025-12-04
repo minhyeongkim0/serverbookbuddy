@@ -1,0 +1,75 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="bodyHeader" class="mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">📚 BookBuddy</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/books}">도서 검색</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/books/new}">도서 등록</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/books/my}">내 판매</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/transactions}">거래 현황</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/wishlist}">찜 목록</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/points}">포인트</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link position-relative" th:href="@{/notifications}">
+                            알림
+                            <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">
+                                0
+                            </span>
+                        </a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember != null}">
+                        <a class="nav-link" th:href="@{/report}">신고하기</a>
+                    </li>
+                </ul>
+
+                <!-- 우측 로그인/포인트 영역 -->
+                <ul class="navbar-nav">
+                    <!-- 비로그인 상태 -->
+                    <li class="nav-item" th:if="${session.loginMember == null}">
+                        <a class="nav-link" th:href="@{/login}">로그인</a>
+                    </li>
+                    <li class="nav-item" th:if="${session.loginMember == null}">
+                        <a class="nav-link" th:href="@{/members/new}">회원가입</a>
+                    </li>
+
+                    <!-- 로그인 상태 -->
+                    <li class="nav-item d-flex align-items-center"
+                        th:if="${session.loginMember != null}">
+
+                        <!-- ⭐ 포인트 표시 -->
+                        <span class="navbar-text text-light me-3"
+                              th:text="'포인트: ' + ${#numbers.formatInteger(session.loginMember.pointBalance, 0, 'COMMA')} + ' p'">
+                            포인트: 0 p
+                        </span>
+
+                        <!-- 닉네임/아이디 표시 -->
+                        <span class="nav-link text-light p-0 me-2"
+                              th:text="${session.loginMember.loginId} + '님'">
+                            user님
+                        </span>
+
+                        <a class="nav-link" th:href="@{/logout}">로그아웃</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+    <title>거래 상세 - BookBuddy</title>
+</head>
+<body>
+
+<div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+<div class="container">
+    <h3 class="mb-4">📄 거래 상세</h3>
+    <!-- ⭐ 에러 안내 박스 (포인트 부족 등) -->
+    <div th:if="${errorMessage}"
+         class="alert alert-danger"
+         role="alert">
+        <span th:text="${errorMessage}">포인트가 부족합니다.</span>
+    </div>
+
+    <div class="row">
+        <!-- 거래 정보 카드 -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div
+                        class="card-header d-flex justify-content-between align-items-center"
+                >
+                    <h5 class="mb-0">거래 정보</h5>
+                    <div>
+                <span
+                        class="badge bg-warning"
+                        th:if="${transaction.status.name() == 'REQUESTED'}"
+                >신청 대기</span
+                >
+                        <span
+                                class="badge bg-info"
+                                th:if="${transaction.status.name() == 'ACCEPTED'}"
+                        >거래 진행중</span
+                        >
+                        <span
+                                class="badge bg-danger"
+                                th:if="${transaction.status.name() == 'REJECTED'}"
+                        >거절됨</span
+                        >
+                        <span
+                                class="badge bg-primary"
+                                th:if="${transaction.status.name() == 'PAID'}"
+                        >결제완료</span
+                        >
+                        <span
+                                class="badge bg-success"
+                                th:if="${transaction.status.name() == 'COMPLETED'}"
+                        >거래완료</span
+                        >
+                        <span
+                                class="badge bg-secondary"
+                                th:if="${transaction.status.name() == 'CANCELLED'}"
+                        >취소됨</span
+                        >
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th style="width: 120px">도서명</th>
+                            <td>
+                                <a
+                                        th:href="@{/books/{id}(id=${transaction.book.id})}"
+                                        th:text="${transaction.book.title}"
+                                        class="text-decoration-none fw-bold"
+                                >도서명</a
+                                >
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>거래 금액</th>
+                            <td>
+                                <strong
+                                        class="text-primary"
+                                        th:text="${#numbers.formatInteger(transaction.price, 0, 'COMMA')} + '원'"
+                                >가격</strong
+                                >
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>판매자</th>
+                            <td
+                                    th:text="${transaction.seller.loginId} + ' (' + ${transaction.seller.department} + ')'">
+                                판매자
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>구매자</th>
+                            <td
+                                    th:text="${transaction.buyer.loginId} + ' (' + ${transaction.buyer.department} + ')'">
+                                구매자
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>신청일</th>
+                            <td
+                                    th:text="${#temporals.format(transaction.requestedAt, 'yyyy-MM-dd HH:mm')}">
+                                신청일
+                            </td>
+                        </tr>
+                        <tr th:if="${transaction.depositorName != null}">
+                            <th>입금자명</th>
+                            <td th:text="${transaction.depositorName}">입금자명</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 액션 버튼 카드 -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body d-grid gap-2">
+                    <!-- [Chat] 채팅하기 버튼 -->
+                    <button
+                            type="button"
+                            class="btn btn-primary w-100 mb-2"
+                            th:onclick="ChatManager.startChat(
+                                [[${isSeller ? transaction.buyer.id : transaction.seller.id}]],
+                                [[${transaction.book.id}]],
+                                [[${isSeller ? transaction.buyer.loginId : transaction.seller.loginId}]]
+                            )">
+                        <i class="fas fa-comments me-2"></i>
+                        <span
+                                th:text="${isSeller ? '구매자와 채팅하기' : '판매자와 채팅하기'}">
+                  채팅하기
+                </span>
+                    </button>
+
+                    <hr class="my-2" />
+
+                    <!-- 판매자: 신청 대기 상태일 때 -->
+                    <div
+                            th:if="${isSeller and transaction.status.name() == 'REQUESTED'}">
+                        <form
+                                th:action="@{/transactions/{id}/accept(id=${transaction.id})}"
+                                method="post"
+                                class="mb-2">
+                            <button type="submit" class="btn btn-success w-100">
+                                거래 수락
+                            </button>
+                        </form>
+                        <form
+                                th:action="@{/transactions/{id}/reject(id=${transaction.id})}"
+                                method="post">
+                            <button type="submit" class="btn btn-outline-danger w-100">
+                                거절
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 구매자: 거래 진행중일 때 포인트 결제 -->
+                    <div
+                            th:if="${isBuyer and transaction.status.name() == 'ACCEPTED'}">
+                        <form
+                                th:action="@{/transactions/{id}/pay(id=${transaction.id})}"
+                                method="post">
+                            <!-- 백엔드에서 depositorName 파라미터를 요구하므로
+                                 구매자 아이디를 숨겨서 보내기 -->
+                            <input type="hidden"
+                                   name="depositorName"
+                                   th:value="${transaction.buyer.loginId}" />
+
+                            <p class="small text-muted mb-2">
+                                이 거래 금액은 보유 포인트에서 차감됩니다.
+                            </p>
+                            <button type="submit" class="btn btn-success w-100">
+                                포인트로 결제하기
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 판매자: 결제 상태에 따른 안내/완료 버튼 -->
+                    <div th:if="${isSeller}">
+                        <!-- 아직 결제 전이면 안내만 -->
+                        <div th:if="${transaction.status.name() == 'ACCEPTED'}"
+                             class="alert alert-info small py-2 mb-2">
+                            아직 구매자가 포인트 결제를 하지 않았습니다.
+                        </div>
+
+                        <!-- 결제 완료(PAID) 이후에만 거래 완료 버튼 노출 -->
+                        <div th:if="${transaction.status.name() == 'PAID'}">
+                            <div class="alert alert-warning small py-2 mb-2">
+                                💰 <strong>구매자가 포인트 결제를 완료했습니다.</strong><br />
+                                입금자명:
+                                <span th:text="${transaction.depositorName}"></span>
+                            </div>
+                            <form
+                                    th:action="@{/transactions/{id}/complete(id=${transaction.id})}"
+                                    method="post"
+                                    onsubmit="return confirm('물품 전달을 완료하셨나요? 거래를 완료합니다.');">
+                                <button type="submit" class="btn btn-success w-100">
+                                    거래 최종 완료
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 거래 취소 (완료/거절/취소 전까지) -->
+                    <div
+                            th:if="${transaction.status.name() != 'COMPLETED' and transaction.status.name() != 'REJECTED' and transaction.status.name() != 'CANCELLED'}"
+                            class="mt-2">
+                        <form
+                                th:action="@{/transactions/{id}/cancel(id=${transaction.id})}"
+                                method="post"
+                                onsubmit="return confirm('정말 거래를 취소하시겠습니까?');">
+                            <button
+                                    type="submit"
+                                    class="btn btn-light text-danger w-100 border-0 btn-sm">
+                                거래 취소
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 상태 메시지 표시 -->
+                    <div
+                            th:if="${transaction.status.name() == 'COMPLETED'}"
+                            class="alert alert-success text-center mb-0 small">
+                        🎉 거래가 성공적으로 완료되었습니다.
+                    </div>
+                    <div
+                            th:if="${transaction.status.name() == 'CANCELLED'}"
+                            class="alert alert-secondary text-center mb-0 small">
+                        취소된 거래입니다.
+                    </div>
+                    <div
+                            th:if="${transaction.status.name() == 'REJECTED'}"
+                            class="alert alert-danger text-center mb-0 small">
+                        거절된 거래입니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a th:href="@{/transactions}" class="btn btn-outline-secondary">
+            <i class="fas fa-list me-1"></i> 목록으로
+        </a>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+    <title>거래 현황 - BookBuddy</title>
+</head>
+<body>
+<div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+<div class="container">
+    <h3 class="mb-4">📋 거래 현황</h3>
+
+    <!-- 탭 -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${tab == 'buy'} ? 'active'" th:href="@{/transactions(tab=buy)}">구매 내역</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${tab == 'sell'} ? 'active'" th:href="@{/transactions(tab=sell)}">판매 내역</a>
+        </li>
+    </ul>
+
+    <!-- 거래 목록 -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>도서명</th>
+                    <th>가격</th>
+                    <th th:text="${tab == 'buy'} ? '판매자' : '구매자'">상대방</th>
+                    <th>거래 상태</th>
+                    <th>신청일</th>
+                    <th>상세</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="tx : ${transactions}">
+                    <td>
+                        <a th:href="@{/books/{id}(id=${tx.book.id})}" th:text="${tx.book.title}">도서명</a>
+                    </td>
+                    <td th:text="${#numbers.formatInteger(tx.price, 0, 'COMMA')} + '원'">가격</td>
+                    <td th:text="${tab == 'buy'} ? ${tx.seller.loginId} : ${tx.buyer.loginId}">상대방</td>
+                    <td>
+                        <span class="badge bg-warning" th:if="${tx.status.name() == 'REQUESTED'}">신청 대기</span>
+                        <span class="badge bg-info" th:if="${tx.status.name() == 'ACCEPTED'}">거래 진행중</span>
+                        <span class="badge bg-danger" th:if="${tx.status.name() == 'REJECTED'}">거절됨</span>
+                        <span class="badge bg-primary" th:if="${tx.status.name() == 'PAID'}">결제완료</span>
+                        <span class="badge bg-success" th:if="${tx.status.name() == 'COMPLETED'}">거래완료</span>
+                        <span class="badge bg-secondary" th:if="${tx.status.name() == 'CANCELLED'}">취소됨</span>
+                    </td>
+                    <td th:text="${#temporals.format(tx.requestedAt, 'yyyy-MM-dd')}">신청일</td>
+                    <td>
+                        <a th:href="@{/transactions/{id}(id=${tx.id})}" class="btn btn-sm btn-outline-primary">상세</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${#lists.isEmpty(transactions)}" class="alert alert-info">
+        진행 중인 거래가 없습니다.
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

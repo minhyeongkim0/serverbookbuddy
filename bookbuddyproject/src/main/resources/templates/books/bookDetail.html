@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/header :: header}">
+    <title th:text="${book.title} + ' - BookBuddy'">도서 상세</title>
+  </head>
+  <body>
+    <div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+    <div class="container">
+      <div class="row">
+        <!-- 도서 이미지 -->
+        <div class="col-md-5">
+          <!-- 이미지 캐러셀 -->
+          <div th:if="${!book.images.isEmpty()}" id="bookImageCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators" th:if="${book.images.size() > 1}">
+              <button th:each="img, stat : ${book.images}" 
+                      type="button" 
+                      data-bs-target="#bookImageCarousel" 
+                      th:data-bs-slide-to="${stat.index}"
+                      th:class="${stat.first} ? 'active' : ''"
+                      th:aria-current="${stat.first} ? 'true' : 'false'"></button>
+            </div>
+            <div class="carousel-inner">
+              <div th:each="img, stat : ${book.images}" 
+                   th:class="${stat.first} ? 'carousel-item active' : 'carousel-item'">
+                <img th:src="@{'/images/' + ${img.savedFilename}}" 
+                     class="d-block w-100 rounded" 
+                     style="height: 400px; object-fit: cover;"
+                     th:alt="${book.title}">
+              </div>
+            </div>
+            <button th:if="${book.images.size() > 1}" class="carousel-control-prev" type="button" data-bs-target="#bookImageCarousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </button>
+            <button th:if="${book.images.size() > 1}" class="carousel-control-next" type="button" data-bs-target="#bookImageCarousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </button>
+          </div>
+          
+          <!-- 썸네일 -->
+          <div th:if="${book.images.size() > 1}" class="row mt-2">
+            <div th:each="img, stat : ${book.images}" class="col-3">
+              <img th:src="@{'/images/' + ${img.savedFilename}}" 
+                   class="img-thumbnail" 
+                   style="height: 80px; object-fit: cover; cursor: pointer;"
+                   th:onclick="'document.querySelector(\'#bookImageCarousel\').querySelector(\'.carousel-item.active\').classList.remove(\'active\'); document.querySelectorAll(\'#bookImageCarousel .carousel-item\')[' + ${stat.index} + '].classList.add(\'active\');'">
+            </div>
+          </div>
+          
+          <!-- 이미지 없을 때 -->
+          <div th:if="${book.images.isEmpty()}" class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+            <span class="text-muted">이미지 없음</span>
+          </div>
+        </div>
+
+        <!-- 도서 정보 -->
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4 class="mb-0" th:text="${book.title}">도서명</h4>
+              <div>
+                <span class="badge bg-info" th:text="${book.bookCondition.displayName}">상태</span>
+                <span class="badge bg-success" th:text="${book.status.displayName}">판매중</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <table class="table table-sm">
+                <tr>
+                  <th style="width: 100px">저자</th>
+                  <td th:text="${book.author}">저자</td>
+                </tr>
+                <tr>
+                  <th>출판사</th>
+                  <td th:text="${book.publisher ?: '-'}">출판사</td>
+                </tr>
+                <tr>
+                  <th>카테고리</th>
+                  <td th:text="${book.category ?: '-'}">학과</td>
+                </tr>
+                <tr>
+                  <th>판매 가격</th>
+                  <td>
+                    <strong class="text-primary fs-5" th:text="${#numbers.formatInteger(book.price, 0, 'COMMA')} + '원'">가격</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <th>등록일</th>
+                  <td th:text="${#temporals.format(book.createdAt, 'yyyy-MM-dd')}">등록일</td>
+                </tr>
+                <tr>
+                  <th>조회수</th>
+                  <td th:text="${book.viewCount}">0</td>
+                </tr>
+              </table>
+
+              <div th:if="${book.description}" class="mt-3">
+                <h6>📝 도서 설명</h6>
+                <p class="text-muted small" th:text="${book.description}">설명</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 판매자 정보 & 액션 -->
+        <div class="col-md-3">
+          <div class="card mb-3">
+            <div class="card-header">
+              <h6 class="mb-0">👤 판매자 정보</h6>
+            </div>
+            <div class="card-body">
+              <p class="mb-1">
+                <strong th:text="${book.seller.loginId}">판매자</strong>
+              </p>
+              <p class="text-muted mb-0" th:text="${book.seller.department}">학과</p>
+            </div>
+          </div>
+
+          <!-- 버튼 영역 -->
+          <div class="d-grid gap-2">
+            <!-- 비로그인 사용자 -->
+            <div th:if="${session.loginMember == null}">
+              <a th:href="@{/login}" class="btn btn-secondary w-100">로그인 후 이용 가능</a>
+            </div>
+
+            <!-- 본인 도서인 경우 -->
+            <div th:if="${isOwner}">
+              <a th:href="@{/books/{id}/edit(id=${book.id})}" class="btn btn-outline-primary w-100 mb-2">수정</a>
+              <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                <button type="submit" class="btn btn-outline-danger w-100">삭제</button>
+              </form>
+            </div>
+
+            <!-- 다른 사람 도서인 경우 -->
+            <div th:if="${session.loginMember != null and !isOwner}">
+              <!-- 찜하기 -->
+              <form th:action="@{/wishlist/toggle}" method="post">
+                <input type="hidden" name="bookId" th:value="${book.id}" />
+                <button type="submit" th:class="${isWished} ? 'btn btn-danger w-100 mb-2' : 'btn btn-outline-danger w-100 mb-2'">
+                  <span th:if="${isWished}">❤️ 찜 취소</span>
+                  <span th:if="${!isWished}">🤍 찜하기</span>
+                  <span th:text="'(' + ${wishCount} + ')'"></span>
+                </button>
+              </form>
+
+              <!-- 거래 신청 -->
+              <form th:if="${book.status.name() == 'ON_SALE'}" th:action="@{/transactions/request}" method="post" onsubmit="return confirm('거래를 신청하시겠습니까?');">
+                <input type="hidden" name="bookId" th:value="${book.id}" />
+                <button type="submit" class="btn btn-primary w-100">거래 신청</button>
+              </form>
+              <button th:if="${book.status.name() != 'ON_SALE'}" class="btn btn-secondary w-100" disabled>거래 신청 불가</button>
+
+              <!-- [Chat] 판매자와 채팅하기 버튼 -->
+              <button type="button" class="btn btn-outline-success w-100 mt-2"
+                th:onclick="ChatManager.startChat([[${book.seller.id}]], [[${book.id}]], [[${book.seller.loginId}]])">
+                <i class="fas fa-comments me-2"></i>판매자와 채팅하기
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <a th:href="@{/books}" class="btn btn-outline-secondary">← 목록으로</a>
+      </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+  </body>
+</html>
