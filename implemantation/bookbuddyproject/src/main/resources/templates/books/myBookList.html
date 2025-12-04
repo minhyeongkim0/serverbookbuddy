@@ -13,9 +13,10 @@
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
+                    <th style="width: 80px;">이미지</th>
                     <th>도서명</th>
                     <th>가격</th>
                     <th>상태</th>
@@ -27,6 +28,17 @@
             </thead>
             <tbody>
                 <tr th:each="book : ${books}">
+                    <td>
+                        <img th:if="${!book.images.isEmpty()}" 
+                             th:src="@{'/images/' + ${book.images[0].savedFilename}}" 
+                             style="width: 60px; height: 60px; object-fit: cover;" 
+                             class="rounded">
+                        <div th:if="${book.images.isEmpty()}" 
+                             class="bg-light rounded d-flex align-items-center justify-content-center" 
+                             style="width: 60px; height: 60px;">
+                            <small class="text-muted">없음</small>
+                        </div>
+                    </td>
                     <td>
                         <a th:href="@{/books/{id}(id=${book.id})}" th:text="${book.title}">도서명</a>
                     </td>

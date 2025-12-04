@@ -14,7 +14,12 @@
                     <h4 class="mb-0">📚 도서 등록</h4>
                 </div>
                 <div class="card-body">
-                    <form th:action="@{/books/new}" th:object="${bookForm}" method="post">
+                    <form th:action="@{/books/new}" th:object="${bookForm}" method="post" enctype="multipart/form-data">
+                        
+                        <!-- 전역 에러 메시지 -->
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                            <span th:each="err : ${#fields.globalErrors()}" th:text="${err}"></span>
+                        </div>
                         
                         <div class="row">
                             <div class="col-md-8 mb-3">
@@ -68,10 +73,15 @@
                             <textarea th:field="*{description}" class="form-control" rows="4" placeholder="도서 상태, 필기 여부 등을 설명해주세요"></textarea>
                         </div>
 
+                        <!-- 이미지 업로드 -->
                         <div class="mb-3">
-                            <label class="form-label">이미지 URL</label>
-                            <input type="text" th:field="*{imageUrl}" class="form-control" placeholder="https://...">
+                            <label class="form-label">도서 이미지 * (1~4장)</label>
+                            <input type="file" name="images" class="form-control" accept="image/*" multiple required>
+                            <div class="form-text">최소 1장, 최대 4장까지 업로드 가능합니다.</div>
                         </div>
+
+                        <!-- 이미지 미리보기 -->
+                        <div id="imagePreview" class="row mb-3"></div>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">등록하기</button>
@@ -85,5 +95,35 @@
 </div>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    // 이미지 미리보기
+    document.querySelector('input[name="images"]').addEventListener('change', function(e) {
+        var preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+        
+        var files = e.target.files;
+        
+        if (files.length > 4) {
+            alert('이미지는 최대 4장까지 업로드 가능합니다.');
+            e.target.value = '';
+            return;
+        }
+        
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var reader = new FileReader();
+            
+            reader.onload = function(event) {
+                var col = document.createElement('div');
+                col.className = 'col-3';
+                col.innerHTML = '<img src="' + event.target.result + '" class="img-fluid rounded" style="height:150px; object-fit:cover;">';
+                preview.appendChild(col);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
 </body>
 </html>

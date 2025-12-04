@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header}">
+    <title>알림 - BookBuddy</title>
+</head>
+<body>
+<div th:replace="~{fragments/bodyHeader :: bodyHeader}"></div>
+
+<div class="container">
+    <h4 class="mb-4">알림</h4>
+
+    <div th:if="${#lists.isEmpty(notifications)}" class="alert alert-info">
+        알림이 없습니다.
+    </div>
+
+    <div class="list-group">
+        <div th:each="notification : ${notifications}" 
+             class="list-group-item list-group-item-action"
+             th:classappend="${!notification.read} ? 'list-group-item-light' : ''">
+            <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1" th:text="${notification.type.description}">알림 유형</h6>
+                <small class="text-muted" th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}">시간</small>
+            </div>
+            <p class="mb-1" th:text="${notification.message}">알림 메시지</p>
+            
+            <!-- 거래 신청 알림인 경우 수락/거절 버튼 표시 -->
+            <div th:if="${notification.type.name() == 'TRANSACTION_REQUEST' && notification.transaction.status.name() == 'REQUESTED'}" class="mt-2">
+                <form th:action="@{/transactions/{id}/accept(id=${notification.transaction.id})}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-success btn-sm">수락</button>
+                </form>
+                <form th:action="@{/transactions/{id}/reject(id=${notification.transaction.id})}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">거절</button>
+                </form>
+                <a th:href="@{/transactions/{id}(id=${notification.transaction.id})}" class="btn btn-outline-primary btn-sm">상세보기</a>
+            </div>
+
+            <!-- 거래 수락됨 알림인 경우 결제하기 버튼 -->
+            <div th:if="${notification.type.name() == 'TRANSACTION_ACCEPTED' && notification.transaction.status.name() == 'ACCEPTED'}" class="mt-2">
+                <a th:href="@{/transactions/{id}(id=${notification.transaction.id})}" class="btn btn-primary btn-sm">결제하기</a>
+            </div>
+
+            <!-- 결제 완료 알림인 경우 거래완료 버튼 -->
+            <div th:if="${notification.type.name() == 'TRANSACTION_PAID' && notification.transaction.status.name() == 'PAID'}" class="mt-2">
+                <a th:href="@{/transactions/{id}(id=${notification.transaction.id})}" class="btn btn-success btn-sm">거래완료 처리</a>
+            </div>
+
+            <!-- 그 외 알림은 상세보기 링크 -->
+            <div th:if="${notification.type.name() != 'TRANSACTION_REQUEST' && notification.type.name() != 'TRANSACTION_ACCEPTED' && notification.type.name() != 'TRANSACTION_PAID'}" class="mt-2">
+                <a th:href="@{/transactions/{id}(id=${notification.transaction.id})}" class="btn btn-outline-secondary btn-sm">상세보기</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

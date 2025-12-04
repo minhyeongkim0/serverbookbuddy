@@ -47,6 +47,7 @@ public class Member {
     @Column(name = "point_balance") // 보유 포인트 (기본 0P)
     private int pointBalance = 0;
 
+    private int reportCount = 0;  // 신고 누적 횟수
 
     @Enumerated(EnumType.STRING)
     private MemberStatus status;  // 계정 상태 (ACTIVE, LOCKED)
@@ -77,6 +78,21 @@ public class Member {
     public void ban() {
         this.status = MemberStatus.BANNED;
     }
+
+    /**
+     * 신고 횟수 증가
+     */
+    public void increaseReportCount() {
+        this.reportCount++;
+    }
+
+    /**
+     * 신고 횟수 리셋 (문제없음 처리 시)
+     */
+    public void resetReportCount() {
+        this.reportCount = 0;
+    }
+
     /**
      * 포인트 충전/적립
      */

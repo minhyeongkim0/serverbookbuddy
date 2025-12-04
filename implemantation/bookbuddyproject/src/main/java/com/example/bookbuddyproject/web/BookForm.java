@@ -31,6 +31,4 @@ public class BookForm {
     private BookCondition bookCondition;
 
     private String description;
-
-    private String imageUrl;
 }

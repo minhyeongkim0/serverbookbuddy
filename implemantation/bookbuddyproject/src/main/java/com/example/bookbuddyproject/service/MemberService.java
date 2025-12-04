@@ -24,6 +24,8 @@ public class MemberService {
                      String department, String studentId) {
         // 이메일 도메인 검증
         validateEmailDomain(email);
+        // 강퇴된 이메일 검증
+        validateBannedEmail(email);
         // 아이디 중복 검증
         validateDuplicateLoginId(loginId);
         // 이메일 중복 검증
@@ -46,6 +48,11 @@ public class MemberService {
         }
 
         Member member = optionalMember.get();
+
+        // 강퇴된 계정 확인
+        if (member.getStatus() == com.example.bookbuddyproject.domain.MemberStatus.BANNED) {
+            throw new IllegalStateException("강퇴된 계정입니다. 로그인할 수 없습니다.");
+        }
 
         // 계정 잠금 확인
         if (member.isLocked()) {
@@ -117,6 +124,12 @@ public class MemberService {
     private void validateEmailDomain(String email) {
         if (!email.endsWith("@yu.ac.kr") && !email.endsWith("@ynu.ac.kr")) {
             throw new IllegalStateException("영남대학교 메일로만 가입 가능합니다. (@yu.ac.kr 또는 @ynu.ac.kr)");
+        }
+    }
+
+    private void validateBannedEmail(String email) {
+        if (memberRepository.isEmailBanned(email)) {
+            throw new IllegalStateException("강퇴된 이메일로는 재가입할 수 없습니다.");
         }
     }
 }

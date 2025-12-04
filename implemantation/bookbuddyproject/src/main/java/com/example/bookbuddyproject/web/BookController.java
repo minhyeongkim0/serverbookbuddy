@@ -12,7 +12,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -74,7 +77,9 @@ public class BookController {
      */
     @PostMapping("/new")
     public String create(@Valid BookForm form, BindingResult result,
-                         HttpSession session, Model model) {
+                         @RequestParam("images") List<MultipartFile> images,
+                         HttpSession session, Model model,
+                         RedirectAttributes redirectAttributes) {
         Member loginMember = (Member) session.getAttribute("loginMember");
         if (loginMember == null) {
             return "redirect:/login";
@@ -85,17 +90,27 @@ public class BookController {
             return "books/createBookForm";
         }
 
-        bookService.registerBook(
-                loginMember.getId(),
-                form.getTitle(),
-                form.getAuthor(),
-                form.getPublisher(),
-                form.getPrice(),
-                form.getCategory(),
-                form.getBookCondition(),
-                form.getDescription(),
-                form.getImageUrl()
-        );
+        try {
+            bookService.registerBook(
+                    loginMember.getId(),
+                    form.getTitle(),
+                    form.getAuthor(),
+                    form.getPublisher(),
+                    form.getPrice(),
+                    form.getCategory(),
+                    form.getBookCondition(),
+                    form.getDescription(),
+                    images
+            );
+        } catch (IllegalStateException e) {
+            result.reject("registerFailed", e.getMessage());
+            model.addAttribute("bookConditions", BookCondition.values());
+            return "books/createBookForm";
+        } catch (IOException e) {
+            result.reject("registerFailed", "이미지 업로드에 실패했습니다.");
+            model.addAttribute("bookConditions", BookCondition.values());
+            return "books/createBookForm";
+        }
 
         return "redirect:/books/my";
     }
@@ -163,9 +178,9 @@ public class BookController {
         form.setCategory(book.getCategory());
         form.setBookCondition(book.getBookCondition());
         form.setDescription(book.getDescription());
-        form.setImageUrl(book.getImageUrl());
 
         model.addAttribute("bookForm", form);
+        model.addAttribute("book", book);
         model.addAttribute("bookConditions", BookCondition.values());
 
         return "books/editBookForm";
@@ -176,7 +191,9 @@ public class BookController {
      */
     @PostMapping("/{bookId}/edit")
     public String edit(@PathVariable Long bookId, @Valid BookForm form,
-                       BindingResult result, HttpSession session, Model model) {
+                       BindingResult result,
+                       @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                       HttpSession session, Model model) {
         Member loginMember = (Member) session.getAttribute("loginMember");
         if (loginMember == null) {
             return "redirect:/login";
@@ -198,10 +215,14 @@ public class BookController {
                     form.getCategory(),
                     form.getBookCondition(),
                     form.getDescription(),
-                    form.getImageUrl()
+                    images
             );
         } catch (IllegalStateException e) {
             result.reject("updateFailed", e.getMessage());
+            model.addAttribute("bookConditions", BookCondition.values());
+            return "books/editBookForm";
+        } catch (IOException e) {
+            result.reject("updateFailed", "이미지 업로드에 실패했습니다.");
             model.addAttribute("bookConditions", BookCondition.values());
             return "books/editBookForm";
         }

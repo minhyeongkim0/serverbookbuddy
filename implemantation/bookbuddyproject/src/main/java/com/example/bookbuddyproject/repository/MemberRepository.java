@@ -75,4 +75,24 @@ public class MemberRepository {
                 .setParameter("keyword", "%" + keyword + "%")
                 .getResultList();
     }
+
+    /**
+     * 이메일이 BANNED 상태인지 확인 (재가입 방지)
+     */
+    public boolean isEmailBanned(String email) {
+        Long count = em.createQuery(
+                "select count(m) from Member m where m.email = :email and m.status = 'BANNED'", Long.class)
+                .setParameter("email", email)
+                .getSingleResult();
+        return count > 0;
+    }
+
+    /**
+     * 신고 3회 이상인 회원 목록 조회
+     */
+    public List<Member> findReportedMembers() {
+        return em.createQuery(
+                "select m from Member m where m.reportCount >= 3 and m.status != 'BANNED' order by m.reportCount desc", Member.class)
+                .getResultList();
+    }
 }

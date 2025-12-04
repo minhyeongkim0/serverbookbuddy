@@ -1,21 +1,27 @@
 package com.example.bookbuddyproject.web.admin;
 
+import com.example.bookbuddyproject.domain.Admin;
+import com.example.bookbuddyproject.service.AdminService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/admin")
 public class AdminHomeController {
 
-    // 관리자 계정 (하드코딩 - 나중에 DB로 변경 가능)
-    private static final String ADMIN_ID = "master";
-    private static final String ADMIN_PASSWORD = "1234";
+    private final AdminService adminService;
 
     /**
      * 관리자 로그인 페이지
@@ -35,14 +41,14 @@ public class AdminHomeController {
             return "admin/loginForm";
         }
 
-        // 관리자 계정 확인
-        if (!ADMIN_ID.equals(form.getAdminId()) || !ADMIN_PASSWORD.equals(form.getPassword())) {
-            result.reject("loginFailed", "아이디 또는 비밀번호가 일치하지 않습니다.");
+        try {
+            Admin admin = adminService.login(form.getAdminId(), form.getPassword());
+            session.setAttribute("admin", admin.getAdminId());
+        } catch (IllegalStateException e) {
+            result.reject("loginFailed", e.getMessage());
             return "admin/loginForm";
         }
 
-        // 로그인 성공
-        session.setAttribute("admin", form.getAdminId());
         return "redirect:/admin";
     }
 
@@ -51,7 +57,6 @@ public class AdminHomeController {
      */
     @GetMapping
     public String home(HttpSession session, Model model) {
-        // 로그인 체크
         if (session.getAttribute("admin") == null) {
             return "redirect:/admin/login";
         }
@@ -65,5 +70,42 @@ public class AdminHomeController {
     public String logout(HttpSession session) {
         session.removeAttribute("admin");
         return "redirect:/admin/login";
+    }
+
+    /**
+     * 관리자 추가 페이지
+     */
+    @GetMapping("/admins")
+    public String adminList(HttpSession session, Model model) {
+        if (session.getAttribute("admin") == null) {
+            return "redirect:/admin/login";
+        }
+
+        List<Admin> admins = adminService.findAll();
+        model.addAttribute("admins", admins);
+        return "admin/adminList";
+    }
+
+    /**
+     * 관리자 추가 처리
+     */
+    @PostMapping("/admins")
+    public String addAdmin(@RequestParam String newAdminId,
+                           @RequestParam String newPassword,
+                           @RequestParam String masterPassword,
+                           HttpSession session,
+                           RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("admin") == null) {
+            return "redirect:/admin/login";
+        }
+
+        try {
+            adminService.addAdmin(newAdminId, newPassword, masterPassword);
+            redirectAttributes.addFlashAttribute("message", "관리자가 추가되었습니다.");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/admin/admins";
     }
 }

@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 도서 엔티티
@@ -53,6 +55,9 @@ public class Book {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
     private Member seller;  // 판매자
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookImage> images = new ArrayList<>();  // 도서 이미지 (1~4장)
 
     // === 생성 메서드 === //
     public static Book createBook(Member seller, String title, String author,
@@ -132,5 +137,29 @@ public class Book {
      */
     public boolean isOnSale() {
         return this.status == BookStatus.ON_SALE;
+    }
+
+    /**
+     * 이미지 추가
+     */
+    public void addImage(BookImage image) {
+        this.images.add(image);
+    }
+
+    /**
+     * 이미지 전체 삭제
+     */
+    public void clearImages() {
+        this.images.clear();
+    }
+
+    /**
+     * 대표 이미지 (첫 번째 이미지)
+     */
+    public String getMainImageFilename() {
+        if (images.isEmpty()) {
+            return null;
+        }
+        return images.get(0).getSavedFilename();
     }
 }

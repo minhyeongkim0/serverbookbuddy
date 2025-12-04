@@ -1,5 +1,6 @@
 package com.example.bookbuddyproject;
 
+import com.example.bookbuddyproject.domain.Admin;
 import com.example.bookbuddyproject.domain.Book;
 import com.example.bookbuddyproject.domain.BookCondition;
 import com.example.bookbuddyproject.domain.Member;
@@ -31,6 +32,10 @@ public class InitDb {
         private final EntityManager em;
 
         public void dbInit() {
+            // 마스터 관리자
+            Admin master = Admin.createAdmin("master", "1234", true);
+            em.persist(master);
+
             // 테스트 회원 1
             Member member1 = Member.createMember(
                     "test1", "test1234!", "test1@ynu.ac.kr",
