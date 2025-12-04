@@ -31,7 +31,7 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">도서 상태 *</label>
                                 <select th:field="*{bookCondition}" class="form-select">
-                                    <option th:each="condition : ${bookConditions}" th:value="${condition}" th:text="${condition.name()}"></option>
+                                    <option th:each="condition : ${bookConditions}" th:value="${condition}" th:text="${condition.displayName}"></option>
                                 </select>
                             </div>
                         </div>

@@ -43,12 +43,8 @@
                         <a th:href="@{/books/{id}(id=${book.id})}" th:text="${book.title}">도서명</a>
                     </td>
                     <td th:text="${#numbers.formatInteger(book.price, 0, 'COMMA')} + '원'">가격</td>
-                    <td><span class="badge bg-info" th:text="${book.bookCondition.name()}">상태</span></td>
-                    <td>
-                        <span class="badge bg-success" th:if="${book.status.name() == 'ON_SALE'}">판매중</span>
-                        <span class="badge bg-warning" th:if="${book.status.name() == 'RESERVED'}">예약중</span>
-                        <span class="badge bg-secondary" th:if="${book.status.name() == 'SOLD_OUT'}">판매완료</span>
-                    </td>
+                    <td><span class="badge bg-info" th:text="${book.bookCondition.displayName}">상태</span></td>
+                    <td><span class="badge bg-success" th:text="${book.status.displayName}">판매중</span></td>
                     <td th:text="${book.viewCount}">0</td>
                     <td th:text="${#temporals.format(book.createdAt, 'yyyy-MM-dd')}">등록일</td>
                     <td>

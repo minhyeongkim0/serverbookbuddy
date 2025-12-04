@@ -3,6 +3,8 @@ package com.example.bookbuddyproject.service;
 import com.example.bookbuddyproject.domain.EmailVerification;
 import com.example.bookbuddyproject.repository.EmailVerificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import java.util.Random;
 public class EmailService {
 
     private final EmailVerificationRepository emailVerificationRepository;
+    private final JavaMailSender mailSender;
 
     /**
      * 이메일 도메인 검증
@@ -24,7 +27,7 @@ public class EmailService {
     }
 
     /**
-     * 인증코드 발송 (콘솔 출력)
+     * 인증코드 발송 (Gmail SMTP)
      */
     @Transactional
     public void sendVerificationCode(String email) {
@@ -40,15 +43,16 @@ public class EmailService {
         EmailVerification ev = EmailVerification.createVerification(email, code);
         emailVerificationRepository.save(ev);
 
-        // 콘솔에 출력 (메일 발송 대신)
-        System.out.println();
-        System.out.println("========================================");
-        System.out.println("이메일 인증코드");
-        System.out.println("받는사람: " + email);
-        System.out.println("인증코드: " + code);
-        System.out.println("유효시간: 5분");
-        System.out.println("========================================");
-        System.out.println();
+        // 이메일 발송
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("[BookBuddy] 이메일 인증코드");
+        message.setText("안녕하세요, BookBuddy입니다.\n\n"
+                + "이메일 인증코드: " + code + "\n\n"
+                + "유효시간: 5분\n\n"
+                + "본인이 요청하지 않았다면 이 메일을 무시해주세요.");
+        
+        mailSender.send(message);
     }
 
     /**

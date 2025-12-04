@@ -59,10 +59,8 @@
             <div class="card-header d-flex justify-content-between align-items-center">
               <h4 class="mb-0" th:text="${book.title}">도서명</h4>
               <div>
-                <span class="badge bg-info" th:text="${book.bookCondition.name()}">상태</span>
-                <span class="badge bg-success" th:if="${book.status.name() == 'ON_SALE'}">판매중</span>
-                <span class="badge bg-warning" th:if="${book.status.name() == 'RESERVED'}">예약중</span>
-                <span class="badge bg-secondary" th:if="${book.status.name() == 'SOLD_OUT'}">판매완료</span>
+                <span class="badge bg-info" th:text="${book.bookCondition.displayName}">상태</span>
+                <span class="badge bg-success" th:text="${book.status.displayName}">판매중</span>
               </div>
             </div>
             <div class="card-body">

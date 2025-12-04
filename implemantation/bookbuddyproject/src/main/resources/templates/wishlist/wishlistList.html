@@ -18,10 +18,8 @@
                     <p class="card-text">
                         <strong class="text-primary" th:text="${#numbers.formatInteger(wishlist.book.price, 0, 'COMMA')} + '원'">가격</strong>
                     </p>
-                    <span class="badge bg-info" th:text="${wishlist.book.bookCondition.name()}">상태</span>
-                    <span class="badge bg-success" th:if="${wishlist.book.status.name() == 'ON_SALE'}">판매중</span>
-                    <span class="badge bg-warning" th:if="${wishlist.book.status.name() == 'RESERVED'}">예약중</span>
-                    <span class="badge bg-secondary" th:if="${wishlist.book.status.name() == 'SOLD_OUT'}">판매완료</span>
+                    <span class="badge bg-info" th:text="${wishlist.book.bookCondition.displayName}">상태</span>
+                    <span class="badge bg-success" th:text="${wishlist.book.status.displayName}">판매중</span>
                 </div>
                 <div class="card-footer d-flex justify-content-between">
                     <a th:href="@{/books/{id}(id=${wishlist.book.id})}" class="btn btn-sm btn-outline-primary">상세보기</a>

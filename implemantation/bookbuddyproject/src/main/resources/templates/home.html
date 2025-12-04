@@ -30,7 +30,7 @@
                     <p class="card-text">
                         <strong class="text-primary" th:text="${#numbers.formatInteger(book.price, 0, 'COMMA')} + '원'">가격</strong>
                     </p>
-                    <span class="badge bg-secondary" th:text="${book.bookCondition.name()}">상태</span>
+                    <span class="badge bg-secondary" th:text="${book.bookCondition.displayName}">상태</span>
                 </div>
                 <div class="card-footer">
                     <a th:href="@{/books/{id}(id=${book.id})}" class="btn btn-sm btn-outline-primary w-100">상세보기</a>

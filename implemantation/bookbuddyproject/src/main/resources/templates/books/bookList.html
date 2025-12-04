@@ -23,7 +23,7 @@
                     <div class="col-md-3">
                         <select name="bookCondition" class="form-select">
                             <option value="">상태 전체</option>
-                            <option th:each="condition : ${bookConditions}" th:value="${condition}" th:text="${condition.name()}" th:selected="${bookCondition == condition}"></option>
+                            <option th:each="condition : ${bookConditions}" th:value="${condition}" th:text="${condition.displayName}" th:selected="${bookCondition == condition}"></option>
                         </select>
                     </div>
                 </div>
@@ -59,10 +59,8 @@
                     <p class="card-text">
                         <strong class="text-primary" th:text="${#numbers.formatInteger(book.price, 0, 'COMMA')} + '원'">가격</strong>
                     </p>
-                    <span class="badge bg-info" th:text="${book.bookCondition.name()}">상태</span>
-                    <span class="badge bg-success" th:if="${book.status.name() == 'ON_SALE'}">판매중</span>
-                    <span class="badge bg-warning" th:if="${book.status.name() == 'RESERVED'}">예약중</span>
-                    <span class="badge bg-secondary" th:if="${book.status.name() == 'SOLD_OUT'}">판매완료</span>
+                    <span class="badge bg-info" th:text="${book.bookCondition.displayName}">상태</span>
+                    <span class="badge bg-success" th:text="${book.status.displayName}">판매중</span>
                 </div>
                 <div class="card-footer">
                     <small class="text-muted">조회 <span th:text="${book.viewCount}">0</span></small>
