@@ -122,7 +122,7 @@
         .then(function(data) {
             console.log('발송 응답:', data);
             if (data.success) {
-                messageDiv.innerHTML = '<span class="text-success">인증코드가 발송되었습니다. (콘솔 확인)</span>';
+                messageDiv.innerHTML = '<span class="text-success">인증코드가 발송되었습니다.</span>';
                 document.getElementById('codeSection').style.display = 'block';
                 document.getElementById('sendCodeBtn').textContent = '재발송';
                 document.getElementById('sendCodeBtn').disabled = false;
