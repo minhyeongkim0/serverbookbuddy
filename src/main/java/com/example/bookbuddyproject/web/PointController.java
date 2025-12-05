@@ -26,7 +26,7 @@ public class PointController {
     private final PointService pointService;
     private final MemberRepository memberRepository;
 
-    private static final String ADMIN_ACCOUNT_NUMBER = "123456789";
+    private static final String ADMIN_ACCOUNT_NUMBER = "국민 94030200884179";
 
     // 세션의 loginMember 기준으로 DB에서 최신 Member 가져오기
     private Member getLoginMember(HttpSession session) {
